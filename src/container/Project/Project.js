@@ -12,9 +12,7 @@ import CardBody from "components/Card/CardBody.js";
 import axios from '../../axios';
 import Button from '../../components/CustomButtons/Button';
 import { Grid } from "@material-ui/core";
-import CustomInput from "components/CustomInput/CustomInput";
-import Autocomplete from '@material-ui/lab/Autocomplete';
-import TextField from '@material-ui/core/TextField';
+import Input from '../../components/Input/Input';
 
 
 const styles = {
@@ -53,14 +51,40 @@ export default function Project() {
 
   const [projects, setProjects] = useState([]);
   const [tableData, setTableData] = useState([]);
+  const [companies, setCompanies] = useState([]);
   const [buttonClick, setButtonClick] = useState(false);
+  const [projectObject, setProjectObject] =  useState({
+    projectName: {
+      elementType: "input",
+      elementConfig: {
+          type: "text",
+          placeholder : "Project Name"
+      },
+      value: '' 
+    }, 
+  companyId: {
+      elementType: "select",
+      elementConfig: {
+        options: [
+          {value: 'fastes', displayName:"ashhhas"},
+          {value: 'fastles', displayName:"asas"},
+        ]
+      },
+      value: ''
+    }
+  });
 
   useEffect( () => {
     axios.get("/projects")
         .then( projects => {
             setProjects(projects.data);
         })
-        .catch(err => {console.log(err)})     
+        .catch(err => {console.log(err)})  
+    axios.get("/companies").then( companies => {
+            projectObject.companyId.elementConfig.options = companies.data;
+            setCompanies(companies.data);
+        })
+        .catch(err => {console.log(err)})  
 }, []);
 
     useEffect( () => {
@@ -75,9 +99,40 @@ export default function Project() {
         })
     }, [projects])
 
+  const createProject = (e) =>{
+    e.preventDefault()
+    const formData = {};
+    for(let formElementIdentifier in projectObject){
+      formData[formElementIdentifier] = projectObject[formElementIdentifier].value;
+    }
+    console.log(formData)
+    axios.post("/projects",{name: formData.projectName, id: formData.companyId})
+  }
+
   const modalHandler = () => {
     setButtonClick(!buttonClick)
-  }  
+  }
+
+  const inputChangeHandler = (e, inputIdentifier) => {
+    e.preventDefault()
+    const updatedForm = {
+      ...projectObject
+    };
+    const updatedFormElement = {
+      ...updatedForm[inputIdentifier]
+    };
+    updatedFormElement.value = e.target.value;
+    updatedForm[inputIdentifier] = updatedFormElement;
+    setProjectObject(updatedForm)
+  }
+
+  const formElementArray = [];
+  for( let key in projectObject){
+    formElementArray.push({
+      id: key,
+      config: projectObject[key]
+    });
+  } 
 
   const classes = useStyles();
 
@@ -86,49 +141,34 @@ export default function Project() {
       <GridItem xs={12} sm={12} md={12}>
         <Card>
           <CardHeader color="primary">
-            <Grid  container>
+            <Grid container>
             <Grid xs={9}><h4 className={classes.cardTitleWhite}>Project List</h4>
             <p className={classes.cardCategoryWhite}>
             List of projects assigned.
             </p>
             </Grid>
             <Grid xs={3} container  direction="row"  justify="flex-end"alignItems="flex-start">
-                <Button color="info" onClick={modalHandler}>Add</Button>
+                <Button color="info" onClick={modalHandler}>{buttonClick ? "Back" : "Add" }</Button>
             </Grid>
             </Grid>   
           </CardHeader>
           { buttonClick ?
           <CardBody>
-          <GridContainer   direction="column">
-                <GridItem xs={12} sm={12} md={5}>
-                  <CustomInput
-                    labelText="Project Name"
-                    id="company-disabled"
-                    formControlProps={{
-                      fullWidth: true
-                    }}
-                    inputProps={{
-                      disabled: true
-                    }}
-                  />
-                      <div className={classes.root}>
-      <Autocomplete
-        id="size-small-standard"
-        size="small"
-        options={[{ title: 'The Shawshank Redemption', year: 1994 }]}
-        getOptionLabel={(option) => option.title}
-        defaultValue={[{ title: 'The Shawshank Redemption', year: 1994 }][0]}
-        renderInput={(params) => (
-          <TextField {...params} variant="standard" label="Size small" placeholder="Favorites" />
-        )}
-      />
-      </div>
-                </GridItem>
-                <GridItem>
-                <Button color="primary">Save</Button>
-                </GridItem>
-              </GridContainer>
-              </CardBody>
+          <GridContainer direction="column">
+                <form onSubmit={createProject}>
+                  {formElementArray.map(formElement =>{
+                    return <Input 
+                        key={formElement.id}
+                        changed={(event) => inputChangeHandler(event, formElement.id)}
+                        elementType={formElement.config.elementType}
+                        elementConfig={formElement.config.elementConfig}
+                        value={formElement.config.value}
+                    ></Input>
+                  })}
+                  <Button color="primary" type="submit">Save</Button>
+                </form>
+          </GridContainer>
+          </CardBody>
               :
           <CardBody>
             <Table
@@ -137,7 +177,6 @@ export default function Project() {
               tableData={tableData}
             />
           </CardBody>}
-
         </Card>
       </GridItem>  
     </GridContainer>

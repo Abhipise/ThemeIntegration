@@ -1,4 +1,4 @@
-import React ,{ useState, useEffect }from 'react';
+import React ,{ useState, useEffect } from 'react';
 
 import axios from '../../axios';
 import { Grid } from '@material-ui/core';
@@ -24,7 +24,7 @@ export default function Issues(props) {
                 setIssuesArray(issuesArray.concat(issues.data));
             })
             .catch(err => {console.log(err)})
-    }, [issuesArray]);
+    }, []);
 
     useEffect( () => {
                 for( const key in issuesArray){
@@ -47,7 +47,7 @@ export default function Issues(props) {
                         setTested(tested.concat(<RecipeReviewCard id={issue._id} issueName={issue.title} issueNumber={issue.taskNumber}></RecipeReviewCard>)); 
                     }
             })
-        }, [issuesArray, backlog, notAnIssue, userInterface, done, tested])
+        }, [issuesArray])
 
     const markAsNotAnIssue = ( id =>{
         const issue = issuesArray.filter(issue => issue._id === id);

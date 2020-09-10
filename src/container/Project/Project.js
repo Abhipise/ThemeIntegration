@@ -51,7 +51,6 @@ export default function Project() {
 
   const [projects, setProjects] = useState([]);
   const [tableData, setTableData] = useState([]);
-  const [companies, setCompanies] = useState([]);
   const [buttonClick, setButtonClick] = useState(false);
   const [projectObject, setProjectObject] =  useState({
     projectName: {
@@ -65,10 +64,7 @@ export default function Project() {
   companyId: {
       elementType: "select",
       elementConfig: {
-        options: [
-          {value: 'fastes', displayName:"ashhhas"},
-          {value: 'fastles', displayName:"asas"},
-        ]
+        options: []
       },
       value: ''
     }
@@ -80,24 +76,23 @@ export default function Project() {
             setProjects(projects.data);
         })
         .catch(err => {console.log(err)})  
-    axios.get("/companies").then( companies => {
+    axios.get("/companies")
+        .then( companies => {
             projectObject.companyId.elementConfig.options = companies.data;
-            setCompanies(companies.data);
         })
         .catch(err => {console.log(err)})  
 }, []);
 
     useEffect( () => {
-        projects.map( (project, index) =>{
-            axios.get(`/companies/${project.comapanyId}`)
-            .then(res => {
-                var array = [];
-                array.push([project.name,res.data.name,project.createdAt.slice(0,10),project.updatedAt.slice(0,10)])
-                setTableData(array);
+        projects.map( async(project) =>{
+          await axios.get(`/companies/${project.comapanyId}`)
+            .then(res => {                
+                tableData.push([project.name,res.data.name,project.createdAt.slice(0,10),project.updatedAt.slice(0,10)])
+                setTableData(tableData);
             })
             .catch(err => {console.log(err)})
         })
-    }, [projects])
+    }, [projects,tableData])
 
   const createProject = (e) =>{
     e.preventDefault()
@@ -105,7 +100,7 @@ export default function Project() {
     for(let formElementIdentifier in projectObject){
       formData[formElementIdentifier] = projectObject[formElementIdentifier].value;
     }
-    console.log(formData)
+    console.log(formData);
     axios.post("/projects",{name: formData.projectName, id: formData.companyId})
   }
 
@@ -152,31 +147,31 @@ export default function Project() {
             </Grid>
             </Grid>   
           </CardHeader>
-          { buttonClick ?
+          {buttonClick ? 
           <CardBody>
-          <GridContainer direction="column">
-                <form onSubmit={createProject}>
-                  {formElementArray.map(formElement =>{
-                    return <Input 
-                        key={formElement.id}
-                        changed={(event) => inputChangeHandler(event, formElement.id)}
-                        elementType={formElement.config.elementType}
-                        elementConfig={formElement.config.elementConfig}
-                        value={formElement.config.value}
-                    ></Input>
-                  })}
-                  <Button color="primary" type="submit">Save</Button>
-                </form>
-          </GridContainer>
-          </CardBody>
-              :
-          <CardBody>
-            <Table
-              tableHeaderColor="primary"
-              tableHead={["Name","Company Name" ,"Created At" ,"Created By"]}
-              tableData={tableData}
-            />
-          </CardBody>}
+  <GridContainer direction="column">
+        <form onSubmit={createProject}>
+          {formElementArray.map(formElement =>{
+            return <Input 
+                key={formElement.id}
+                changed={(event) => inputChangeHandler(event, formElement.id)}
+                elementType={formElement.config.elementType}
+                elementConfig={formElement.config.elementConfig}
+                value={formElement.config.value}
+            ></Input>
+          })}
+          <Button color="primary" type="submit">Save</Button>
+        </form>
+  </GridContainer>
+  </CardBody>: 
+  <CardBody>
+    <Table
+    tableHeaderColor="primary"
+    tableHead={["Name","Company Name" ,"Created At" ,"Created By"]}
+    tableData={tableData}
+    />
+  </CardBody>
+  }
         </Card>
       </GridItem>  
     </GridContainer>

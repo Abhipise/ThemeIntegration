@@ -1,14 +1,12 @@
 import React, { useState} from 'react';
-import { Grid, Button } from '@material-ui/core';
+import RecipeReviewCard from "../../components/CustomCard/Card";
+import classes from "./IssueSorter.css";
 
 const IssueSorter = (props) => {
-    
+
     return (
-        <div>
-            <Grid key={props.id}>
-            <strong>{props.head}</strong>
-                {props.issues}
-            </Grid>
+    <div style={{margin : "10px"}}>
+            <RecipeReviewCard clicked={props.clicked} id={props.id} type={props.type} issueName={props.issueName} issueNumber={props.issueNumber} ></RecipeReviewCard>
         </div>
     )
 }

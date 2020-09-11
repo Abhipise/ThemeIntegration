@@ -1,34 +1,63 @@
-import React from 'react';
+import React, {useState} from 'react';
 import { makeStyles } from '@material-ui/core/styles';
 import Card from '@material-ui/core/Card';
 import CardContent from '@material-ui/core/CardContent';
 import Collapse from '@material-ui/core/Collapse';
 import Typography from '@material-ui/core/Typography';
 
+import Input from '../../components/Input/Input';
+
 const useStyles = makeStyles((theme) => ({
   root: {
-    maxWidth: 250
-  },
-  expand: {
-    transform: 'rotate(0deg)',
-    marginLeft: 'auto',
-    transition: theme.transitions.create('transform', {
-      duration: theme.transitions.duration.shortest,
-    }),
-  },
-  expandOpen: {
-    transform: 'rotate(180deg)',
+    maxWidth: 250,
+    minWidth: 200 
   }
 }));
 
 export default function RecipeReviewCard(props) {
   
   const classes = useStyles();
-  const [expanded] = React.useState(false);
+  const [expanded] = useState(false);
+  const [dropDown, setDropdown] = useState({
+    changeTo: {
+      name: "Changed To",
+      elementType: "select",
+      elementConfig: {
+        options: [
+            {value: 'backlog', name: 'Backlog'},
+            {value: 'notAnIssue', name: 'Not An Issue'},
+            {value: 'UI/UX', name: 'UI/UX'},
+            {value: 'tested', name: 'Tested'},
+      ]  
+      },
+      value: ''
+    }
+  });
+
+const inputChangeHandler = (e, inputIdentifier) => {
+    e.preventDefault()
+    const updatedForm = {
+    ...dropDown
+    };
+    const updatedFormElement = {
+    ...updatedForm[inputIdentifier]
+    };
+    updatedFormElement.value = e.target.value;
+    updatedForm[inputIdentifier] = updatedFormElement;
+    setDropdown(updatedForm);
+}
+
+const formElementArray = [];
+    for( let key in dropDown){
+        formElementArray.push({
+          id: key,
+          config: dropDown[key]
+        });
+      }
 
   return (
-    <Card className={classes.root} key={props}>
-      <CardContent>
+    <Card className={classes.root} key={props.id}>
+      <CardContent className={classes.card}>
       <Typography paragraph>
             {props.issueNumber}
           </Typography>
@@ -37,6 +66,16 @@ export default function RecipeReviewCard(props) {
         Heat 1/2 cup of the broth in a pot until simmering, add saffron and set aside for 10
             minutes.
         </Typography>
+        {formElementArray.map(formElement =>{
+            return <Input 
+                key={formElement.id}
+                changed={(event) => inputChangeHandler(event, formElement.id)}
+                label={formElement.config.name}
+                elementType={formElement.config.elementType}
+                elementConfig={formElement.config.elementConfig}
+                value={formElement.config.value}
+            ></Input>
+          })}
       </CardContent>
       <Collapse in={expanded} timeout="auto" unmountOnExit>
         <CardContent>

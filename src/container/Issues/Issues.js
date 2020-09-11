@@ -9,6 +9,7 @@ import Modal from '@material-ui/core/Modal';
 import { makeStyles } from '@material-ui/core/styles';
 import Input from '../../components/Input/Input';
 import Button from '../../components/CustomButtons/Button';
+import './issues.css';
 
 
 function getModalStyle() {
@@ -31,7 +32,11 @@ function getModalStyle() {
       boxShadow: theme.shadows[5],
       padding: theme.spacing(2, 4, 3),
     },
-  }));
+    root: {
+          maxWidth: 250,
+          width: '100%'
+        }
+        }));
 
 function Issues(props) {
   
@@ -43,7 +48,9 @@ function Issues(props) {
     const [done, setDone] = useState([]);
     const [tested, setTested] = useState([]);
     const [issuesArray, setIssuesArray] = useState([]);
+    const [error, setError] = useState(false);
     const [open, setOpen] = useState(false);
+    const [issueList, setIssuelist] = useState([]);
     const [issues, setIssues] = useState({
         name: {
             elementType: "input",
@@ -134,7 +141,7 @@ function Issues(props) {
             .then( issues => {
                 setIssuesArray(issuesArray.concat(issues.data));
             })
-            .catch(err => {console.log(err)})
+            .catch(err => {console.log(err)},setError(true))
         axios.get('/projects')
             .then( project => {
                 project.data.map( (project,index) => {
@@ -154,25 +161,62 @@ function Issues(props) {
     }, []);
 
     useEffect(() => {
-                issuesArray.forEach( issue => {
-                    if(issue.type === "backlog"){
-                        setBacklog(backlog.concat(<RecipeReviewCard id={issue._id} issueName={issue.title} issueNumber={issue.taskNumber} ></RecipeReviewCard>));
-                    }
-                    else if(issue.type === "notAnIssue"){
-                        setNotAnIssue(notAnIssue.concat(<RecipeReviewCard id={issue._id} issueName={issue.title} issueNumber={issue.taskNumber}></RecipeReviewCard>));
-                    }
-                    else if(issue.type === "UI/UX"){
-                        setUserInterface(userInterface.concat(<RecipeReviewCard id={issue._id} issueName={issue.title} issueNumber={issue.taskNumber}></RecipeReviewCard>)); 
-                    }
-                    else if(issue.type === "done"){
-                        setDone(done.concat(<RecipeReviewCard id={issue._id} issueName={issue.title} issueNumber={issue.taskNumber}></RecipeReviewCard>)); 
-                    }
-                    else if(issue.type === "tested"){
-                        setTested(tested.concat(<RecipeReviewCard id={issue._id} issueName={issue.title} issueNumber={issue.taskNumber}></RecipeReviewCard>)); 
-                    }
-            })
-        }, [issuesArray])
-    
+        const backlog = [];
+        const notAnIssue = [];
+        const userInterface = [];
+        const tested = [];
+        const done = [];
+        issuesArray.map(issue => {
+            if(issue.type === "backlog"){
+                backlog.push(<IssueSorter
+                    id={issue._id}
+                    type={issue.type}
+                    issueName={issue.title}
+                    issueNumber={issue.taskNumber}
+                    clicked={editHandler(issue)}
+                    ></IssueSorter>
+                    )
+            } else if(issue.type === "notAnIssue"){
+                notAnIssue.push(<IssueSorter
+                    id={issue._id}
+                    type={issue.type}
+                    issueName={issue.title}
+                    issueNumber={issue.taskNumber}
+                    ></IssueSorter>)
+            } else if(issue.type === "UI/UX"){
+                userInterface.push(<IssueSorter
+                    id={issue._id}
+                    type={issue.type}
+                    issueName={issue.title}
+                    issueNumber={issue.taskNumber}
+                    ></IssueSorter>)
+            } else if(issue.type === "tested"){
+                tested.push(<IssueSorter
+                    id={issue._id}
+                    type={issue.type}
+                    issueName={issue.title}
+                    issueNumber={issue.taskNumber}
+                    ></IssueSorter>)
+            } else if(issue.type === "done"){
+                done.push(<IssueSorter
+                    id={issue._id}
+                    type={issue.type}
+                    issueName={issue.title}
+                    issueNumber={issue.taskNumber}
+                    ></IssueSorter>)
+            }  
+            setBacklog(backlog) 
+            setNotAnIssue(notAnIssue) 
+            setUserInterface(userInterface)
+            setTested(tested)
+            setDone(done)   
+        })
+    }, [issuesArray])
+
+    const editHandler = (issue) => {
+        console.log(issue,"aaaaaaa");
+    }
+
     const submitHandler = (e) => {
         e.preventDefault();
         let issue = {
@@ -186,13 +230,11 @@ function Issues(props) {
             attachment: issues.attachment.value,
             comment: issues.comment.value,
         }
-        console.log(issue,"aaaaaaaaaaaaa");
         axios.post("/issues",issue)
         .then( result => {
             console.log("Issue created succsfully");
         })
         .catch(err => {console.log(err)})
- 
     }
 
     const handleOpen = () => {
@@ -210,7 +252,6 @@ function Issues(props) {
         updatedFormElement.value = e.target.value;
         updatedForm[inputIdentifier] = updatedFormElement;
         setIssues(updatedForm);
-        console.log(issues.projectId.value,e.target.value)
     }
 
     const formElementArray = [];
@@ -221,21 +262,20 @@ function Issues(props) {
         });
       }
 
-    const issueTable = <div>
-    <Grid container direction="row" justify="space-evenly" alignItems="flex-start">
-    <IssueSorter head="Backlog" issues={backlog[0]}></IssueSorter>    
-    <IssueSorter head="Not An Issue" issues={notAnIssue[0]}></IssueSorter>    
-    <IssueSorter head="UI/UX" issues={userInterface[0]}></IssueSorter>    
-    <IssueSorter head="Done" issues={done[0]}></IssueSorter>    
-    <IssueSorter head="Tested" issues={tested[0]}></IssueSorter>
+    const issueTable = <div className={classes.root}>
+      <div className="flex-container"> 
+        <div className="element">Backlog{backlog}</div>
+        <div className="element">Not an Issue{notAnIssue}</div>
+        <div className="element">UI/UX{userInterface}</div>
+        <div className="element">Tested{tested}</div>
+        <div className="element">Done{done}</div>
+      </div>
     <Button onClick={handleOpen}>Add Issue</Button>    
-    </Grid> 
     </div> 
 
     return(
-        <div>
-        {issuesArray === []? <Spinner></Spinner>:
-        issueTable} 
+        <div className="app">
+        {error ? issueTable: <Spinner></Spinner>} 
         <Modal
             open={open}
             onClose={() => setOpen(false)}

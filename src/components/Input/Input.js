@@ -5,7 +5,7 @@ import MenuItem from '@material-ui/core/MenuItem';
 
 export  default function Inputs(props){
 
-    let inputElement =null;
+    let inputElement = null;
 
     switch (props.elementType){
         case ('input'):

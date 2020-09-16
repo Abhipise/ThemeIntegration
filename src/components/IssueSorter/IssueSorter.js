@@ -1,12 +1,11 @@
-import React, { useState} from 'react';
+import React from 'react';
 import RecipeReviewCard from "../../components/CustomCard/Card";
-import classes from "./IssueSorter.css";
 
 const IssueSorter = (props) => {
 
     return (
     <div style={{margin : "10px"}}>
-            <RecipeReviewCard clicked={props.clicked} id={props.id} type={props.type} issueName={props.issueName} issueNumber={props.issueNumber} ></RecipeReviewCard>
+            <RecipeReviewCard clicked={props.clicked} key={props.id} type={props.type} issueName={props.issueName} issueNumber={props.issueNumber} ></RecipeReviewCard>
         </div>
     )
 }

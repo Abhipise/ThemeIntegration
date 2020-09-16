@@ -1,8 +1,7 @@
 import React ,{ useState, useEffect } from 'react';
 
 import axios from '../../axios';
-import { Grid } from '@material-ui/core';
-import RecipeReviewCard from "../../components/CustomCard/Card";
+// import RecipeReviewCard from "../../components/CustomCard/Card";
 import IssueSorter from '../../components/IssueSorter/IssueSorter';
 import Spinner from '../../components/Spinner/Spinner';
 import Modal from '@material-ui/core/Modal';
@@ -50,8 +49,13 @@ function Issues(props) {
     const [issuesArray, setIssuesArray] = useState([]);
     const [error, setError] = useState(false);
     const [open, setOpen] = useState(false);
-    const [issueList, setIssuelist] = useState([]);
+    const [edit, setEdit] = useState(false)
+    // const [formElement, setFormElementArray] = useState([])
     const [issues, setIssues] = useState({
+        id: {
+            elementType: "id",
+            value: ''
+        },
         name: {
             elementType: "input",
             elementConfig: {
@@ -169,40 +173,48 @@ function Issues(props) {
         issuesArray.map(issue => {
             if(issue.type === "backlog"){
                 backlog.push(<IssueSorter
-                    id={issue._id}
+                    key={issue._id}
                     type={issue.type}
                     issueName={issue.title}
                     issueNumber={issue.taskNumber}
-                    clicked={editHandler(issue)}
+                    clicked={() => editHandler(issue)}
                     ></IssueSorter>
                     )
             } else if(issue.type === "notAnIssue"){
                 notAnIssue.push(<IssueSorter
+                    key={issue._id}
                     id={issue._id}
                     type={issue.type}
                     issueName={issue.title}
                     issueNumber={issue.taskNumber}
+                    clicked={() => editHandler(issue)}
                     ></IssueSorter>)
             } else if(issue.type === "UI/UX"){
                 userInterface.push(<IssueSorter
+                    key={issue._id}
                     id={issue._id}
                     type={issue.type}
                     issueName={issue.title}
                     issueNumber={issue.taskNumber}
+                    clicked={() => editHandler(issue)}
                     ></IssueSorter>)
             } else if(issue.type === "tested"){
                 tested.push(<IssueSorter
+                    key={issue._id}
                     id={issue._id}
                     type={issue.type}
                     issueName={issue.title}
                     issueNumber={issue.taskNumber}
+                    clicked={() => editHandler(issue)}
                     ></IssueSorter>)
             } else if(issue.type === "done"){
                 done.push(<IssueSorter
+                    key={issue._id}
                     id={issue._id}
                     type={issue.type}
                     issueName={issue.title}
                     issueNumber={issue.taskNumber}
+                    clicked={() => editHandler(issue)}
                     ></IssueSorter>)
             }  
             setBacklog(backlog) 
@@ -214,7 +226,44 @@ function Issues(props) {
     }, [issuesArray])
 
     const editHandler = (issue) => {
-        console.log(issue,"aaaaaaa");
+        handleOpen();
+        setEdit(true)
+            const updatedForm = {
+            ...issues
+            };
+            updatedForm.id.value = issue._id;
+            updatedForm.name.value = issue.name;
+            updatedForm.projectId.value = issue.projectId;
+            updatedForm.title.value = issue.type;
+            updatedForm.type.value = issue.type;
+            updatedForm.taskNumber.value = issue.taskNumber;
+            updatedForm.severity.value = issue.severity;
+            updatedForm.assignedTo.value = issue.assignedTo;
+            updatedForm.attachment.value = issue.attachment;
+            updatedForm.comment.value = issue.comment;
+            console.log(updatedForm);
+            setIssues(updatedForm);
+    }
+
+    const editSubmitHandler = async(e) => {
+        e.preventDefault();
+        let updatedIssue = {
+            name: issues.name.value,
+            projectId: issues.projectId.value,
+            title: issues.title.value,
+            type: issues.type.value,
+            taskNumber: issues.taskNumber.value,
+            severity: issues.severity.value,
+            assignedTo: issues.assignedTo.value,
+            attachment: issues.attachment.value,
+            comment: issues.comment.value
+            }
+            console.log(updatedIssue,"aaaaaaaaa")
+            await axios.put(`/issue/${issues.id.value}`, updatedIssue)
+            .then( result => {
+                console.log("Issue updated succsfully");
+            })
+            .catch(err => {console.log(err)})
     }
 
     const submitHandler = (e) => {
@@ -228,7 +277,7 @@ function Issues(props) {
             severity: issues.severity.value,
             assignedTo: issues.assignedTo.value,
             attachment: issues.attachment.value,
-            comment: issues.comment.value,
+            comment: issues.comment.value
         }
         axios.post("/issues",issue)
         .then( result => {
@@ -257,12 +306,13 @@ function Issues(props) {
     const formElementArray = [];
     for( let key in issues){
         formElementArray.push({
-          id: key,
+            id: key,
           config: issues[key]
         });
       }
 
-    const issueTable = <div className={classes.root}>
+    const issueTable = 
+    <div className={classes.root}>
       <div className="flex-container"> 
         <div className="element">Backlog{backlog}</div>
         <div className="element">Not an Issue{notAnIssue}</div>
@@ -270,34 +320,38 @@ function Issues(props) {
         <div className="element">Tested{tested}</div>
         <div className="element">Done{done}</div>
       </div>
-    <Button onClick={handleOpen}>Add Issue</Button>    
+        <Button onClick={handleOpen}>Add Issue</Button>    
     </div> 
 
+    let form =( 
+        <div style={modalStyle} className={classes.paper}> 
+            {/* <form onSubmit={submitHandler}> */}
+            <form>
+                <h4>Issue Creation</h4>
+                    {formElementArray.map((formElement,index) =>(
+                    <Input
+                        key={formElement.id}
+                        label={formElement.config.name}
+                        elementType={formElement.config.elementType}
+                        elementConfig={formElement.config.elementConfig}
+                        value={formElement.config.value}
+                        changed={(event) => inputChangeHandler(event, formElement.id)}
+                    ></Input>
+                    ))}
+                    <Button color="primary" type="submit" onClick={(e)=>editSubmitHandler(e)}>Save</Button>
+            </form>
+        </div>)
+
     return(
-        <div className="app">
+    <div className="app">
         {error ? issueTable: <Spinner></Spinner>} 
         <Modal
             open={open}
             onClose={() => setOpen(false)}
         >
-        <div style={modalStyle} className={classes.paper}> 
-            <form onSubmit={submitHandler}>
-            <h4>Issue Creation</h4>
-            {formElementArray.map(formElement =>{
-            return <Input 
-                key={formElement.id}
-                changed={(event) => inputChangeHandler(event, formElement.id)}
-                label={formElement.config.name}
-                elementType={formElement.config.elementType}
-                elementConfig={formElement.config.elementConfig}
-                value={formElement.config.value}
-            ></Input>
-          })}
-            <Button color="primary" type="submit">Save</Button>
-        </form>
-        </div>
+            {form}
         </Modal>     
- </div>
+    </div>
     )
 }
 

@@ -7,13 +7,13 @@ export  default function Inputs(props){
 
     let inputElement = null;
 
-    // const getProps = (() => {
-    //     console.log(props)
-    // })
+    const getProps = (() => {
+        console.log(props)
+    })
 
     switch (props.elementType){
         case ('input'):
-            inputElement = <Input {...props.elementConfig}  key={props.key} value={props.value} onChange={props.changed}></Input>
+            inputElement = <Input {...props.elementConfig}  key={props.id} value={props.value} onChange={props.changed}></Input>
         break;
         case ('id'):
             inputElement = null
@@ -23,20 +23,20 @@ export  default function Inputs(props){
             <Select value={props.value} onChange={props.changed}>
                 {props.elementConfig.options.map(option => {
                     // return <option key={option.value} value={option._id}>{option.name}</option>
-                return <MenuItem key={props.key} value={option.value}>{option.name}</MenuItem>
+                return <MenuItem key={option.value} value={option.value}>{option.name}</MenuItem>
                     })}
             </Select>
             </InputLabel>
         break;
         default:
-           inputElement = <Input {...props.elementConfig} key={props.key} value={props.value}> </Input>
+           inputElement = <Input {...props.elementConfig} key={props.id} value={props.value}> </Input>
         break;
     }
 
     return (
         <div>
             {inputElement}
-            {/* <Button onClick={getProps}>dggh</Button> */}
+            <Button onClick={getProps}>dggh</Button>
         </div>
     )
 }

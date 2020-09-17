@@ -12,7 +12,8 @@ export default function Auth( props) {
     const [passwordError,setPasswordError] = useState(false);
     const [signup, setSignup] = useState(true);
     const [success, setSucces] = useState(false);
-   
+    const [name, setName] = useState('');
+
     const onSubmitHandler = (e) => {
         e.preventDefault();
         if(!email){
@@ -26,8 +27,9 @@ export default function Auth( props) {
                     .then(res => {
                         setEmailError(false)
                         setPasswordError(false)
+                        console.log(props.history.push('/admin/dashboard'))  
                 })
-            } else {
+                } else {
                 axios.post("/users/signup",{email:email,password:password})
                 .then(res => {
                     setSucces(true)
@@ -64,6 +66,12 @@ export default function Auth( props) {
                     onChange={(e) => setEmail(e.target.value)}
                 ></Input><br></br>
                 <Input
+                    placeholder="Name"
+                    type="Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                ></Input><br></br>
+                <Input
                     placeholder="Password"
                     type="Password"
                     value={password}
@@ -82,7 +90,7 @@ export default function Auth( props) {
                     <SnackbarContent message={"User created succesfully"} />
                 }
                 <Button type="button" color="primary" onClick={onSubmitHandler}>Submit</Button> 
-            <Button type="button" color="primary" onClick={switchAuthModeHandler}>Switch to {signup ? "signup": "signin"}</Button>  
+                <Button type="button" color="primary" onClick={switchAuthModeHandler}>Switch to {signup ? "signup": "signin"}</Button>  
                </Grid>               
             </form >     
         </div>

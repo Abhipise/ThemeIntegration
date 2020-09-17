@@ -1,7 +1,6 @@
 import React ,{ useState, useEffect } from 'react';
 
 import axios from '../../axios';
-// import RecipeReviewCard from "../../components/CustomCard/Card";
 import IssueSorter from '../../components/IssueSorter/IssueSorter';
 import Spinner from '../../components/Spinner/Spinner';
 import Modal from '@material-ui/core/Modal';
@@ -50,7 +49,6 @@ function Issues(props) {
     const [error, setError] = useState(false);
     const [open, setOpen] = useState(false);
     const [edit, setEdit] = useState(false)
-    // const [formElement, setFormElementArray] = useState([])
     const [issues, setIssues] = useState({
         id: {
             elementType: "id",
@@ -89,6 +87,7 @@ function Issues(props) {
                   {value: 'notAnIssue', name: 'Not An Issue'},
                   {value: 'UI/UX', name: 'UI/UX'},
                   {value: 'tested', name: 'Tested'},
+                  {value: 'done', name: 'Done'}
             ]  
             },
             value: ''
@@ -241,12 +240,11 @@ function Issues(props) {
             updatedForm.assignedTo.value = issue.assignedTo;
             updatedForm.attachment.value = issue.attachment;
             updatedForm.comment.value = issue.comment;
-            console.log(updatedForm);
             setIssues(updatedForm);
     }
 
     const editSubmitHandler = async(e) => {
-        e.preventDefault();
+        e.preventDefault()
         let updatedIssue = {
             name: issues.name.value,
             projectId: issues.projectId.value,
@@ -259,9 +257,10 @@ function Issues(props) {
             comment: issues.comment.value
             }
             console.log(updatedIssue,"aaaaaaaaa")
-            await axios.put(`/issue/${issues.id.value}`, updatedIssue)
+            await axios.put(`/issues/${issues.id.value}`, updatedIssue)
             .then( result => {
-                console.log("Issue updated succsfully");
+                console.log("Issue updated succefully");
+                setOpen(false)
             })
             .catch(err => {console.log(err)})
     }
@@ -289,6 +288,21 @@ function Issues(props) {
     const handleOpen = () => {
         setOpen(true);
     };
+
+    const defaultOpen = () => {
+        const updatedForm = {
+            ...issues
+            };
+        for(let key in updatedForm){
+            const updatedFormElement = {
+                ...updatedForm[key]
+                };
+            updatedFormElement.value = " ";
+            updatedForm[key] = updatedFormElement;
+            setIssues(updatedForm);
+        }
+        setOpen(true);
+    }
 
     const inputChangeHandler = (e, inputIdentifier) => {
         e.preventDefault()
@@ -320,17 +334,17 @@ function Issues(props) {
         <div className="element">Tested{tested}</div>
         <div className="element">Done{done}</div>
       </div>
-        <Button onClick={handleOpen}>Add Issue</Button>    
+        <Button onClick={defaultOpen}>Add Issue</Button>    
     </div> 
 
     let form =( 
         <div style={modalStyle} className={classes.paper}> 
-            {/* <form onSubmit={submitHandler}> */}
-            <form>
-                <h4>Issue Creation</h4>
-                    {formElementArray.map((formElement,index) =>(
+            <form onSubmit={submitHandler}>
+                <h4>{edit ? "Issue Editing" : "Issue Creation"}</h4>
+                    {formElementArray.map((formElement) =>(
                     <Input
                         key={formElement.id}
+                        id={formElement.id}
                         label={formElement.config.name}
                         elementType={formElement.config.elementType}
                         elementConfig={formElement.config.elementConfig}
@@ -338,7 +352,8 @@ function Issues(props) {
                         changed={(event) => inputChangeHandler(event, formElement.id)}
                     ></Input>
                     ))}
-                    <Button color="primary" type="submit" onClick={(e)=>editSubmitHandler(e)}>Save</Button>
+                    {edit ? <Button color="primary" onClick={(e)=>editSubmitHandler(e)}>Save</Button>:
+                    <Button color="primary" type="submit" onClick={(e)=>editSubmitHandler(e)}>Save</Button>}
             </form>
         </div>)
 
